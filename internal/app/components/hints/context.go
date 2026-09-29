@@ -201,11 +201,15 @@ type Context struct {
 	searchQuery       string
 	searchActive      bool
 	hideOnEmptySearch bool
+	exitOnUnmatched   bool
 }
 
 // SetManager sets the domain hint manager.
 func (c *Context) SetManager(manager *domainHint.Manager) {
 	c.manager = manager
+	if c.manager != nil {
+		c.manager.SetExitOnUnmatched(c.exitOnUnmatched)
+	}
 }
 
 // Manager returns the domain hint manager.
@@ -304,6 +308,19 @@ func (c *Context) HideOnEmptySearch() bool {
 	return c.hideOnEmptySearch
 }
 
+// SetExitOnUnmatched sets whether hint mode should exit when a key matches no hint.
+func (c *Context) SetExitOnUnmatched(exit bool) {
+	c.exitOnUnmatched = exit
+	if c.manager != nil {
+		c.manager.SetExitOnUnmatched(exit)
+	}
+}
+
+// ExitOnUnmatched returns whether hint mode should exit when a key matches no hint.
+func (c *Context) ExitOnUnmatched() bool {
+	return c.exitOnUnmatched
+}
+
 // Reset resets the hints context to its initial state.
 func (c *Context) Reset() error {
 	var err error
@@ -316,6 +333,7 @@ func (c *Context) Reset() error {
 	c.searchQuery = ""
 	c.searchActive = false
 	c.hideOnEmptySearch = false
+	c.exitOnUnmatched = false
 	c.baseContext.Reset()
 
 	return err

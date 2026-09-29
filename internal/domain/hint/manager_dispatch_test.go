@@ -101,7 +101,7 @@ func (r *updateRecorder) handleInput(
 	)
 
 	r.during(func() {
-		match, found, err = manager.HandleInput(key)
+		match, found, _, err = manager.HandleInput(key)
 	})
 
 	if err != nil {

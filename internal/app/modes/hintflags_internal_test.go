@@ -31,6 +31,7 @@ func populatedContext() *hints.Context {
 	ctx.SetFilterTextContains([]string{"OK"})
 	ctx.SetStartWithSearch(true)
 	ctx.SetHideOnEmptySearch(true)
+	ctx.SetExitOnUnmatched(true)
 	ctx.SetStrategyOverride(strategyVision)
 	ctx.SetLabelDirectionOverride(dirReverse)
 	ctx.SetSplitWord(true)
@@ -82,6 +83,10 @@ func TestApplyHintFlags_RefreshKeepsUnsetFlags(t *testing.T) {
 
 	if !ctx.HideOnEmptySearch() {
 		t.Error("HideOnEmptySearch was reset; want it kept across a refresh")
+	}
+
+	if !ctx.ExitOnUnmatched() {
+		t.Error("ExitOnUnmatched was reset; want it kept across a refresh")
 	}
 
 	if len(ctx.FilterRoles()) != 1 {
@@ -191,6 +196,10 @@ func TestApplyHintFlags_FreshResetsUnsetFlags(t *testing.T) {
 		t.Error("HideOnEmptySearch = true, want it cleared")
 	}
 
+	if ctx.ExitOnUnmatched() {
+		t.Error("ExitOnUnmatched = true, want it cleared")
+	}
+
 	if ctx.Repeat() {
 		t.Error("Repeat = true, want a fresh activation to start without it")
 	}
@@ -213,13 +222,15 @@ func TestApplyHintFlags_FreshWritesTheFlagsItWasGiven(t *testing.T) {
 
 	action := "double_click"
 	search := true
+	exitOnUnmatched := true
 	labelDirection := dirReverse
 
 	applyHintFlags(ctx, modecmd.Activation{
-		Action:         &action,
-		Search:         &search,
-		LabelDirection: &labelDirection,
-		FilterRoles:    []string{"AXLink"},
+		Action:          &action,
+		Search:          &search,
+		ExitOnUnmatched: &exitOnUnmatched,
+		LabelDirection:  &labelDirection,
+		FilterRoles:     []string{"AXLink"},
 	}, false)
 
 	if ctx.PendingAction() == nil || *ctx.PendingAction() != "double_click" {
@@ -228,6 +239,10 @@ func TestApplyHintFlags_FreshWritesTheFlagsItWasGiven(t *testing.T) {
 
 	if !ctx.StartWithSearch() {
 		t.Error("StartWithSearch = false, want the flag that was given")
+	}
+
+	if !ctx.ExitOnUnmatched() {
+		t.Error("ExitOnUnmatched = false, want the flag that was given")
 	}
 
 	if ctx.LabelDirectionOverride() != dirReverse {

@@ -55,6 +55,10 @@ func applyHintFlagOverrides(ctx *hints.Context, activation modecmd.Activation) {
 		ctx.SetHideOnEmptySearch(*activation.HideOnEmptySearch)
 	}
 
+	if activation.ExitOnUnmatched != nil {
+		ctx.SetExitOnUnmatched(*activation.ExitOnUnmatched)
+	}
+
 	if activation.Strategy != nil {
 		ctx.SetStrategyOverride(*activation.Strategy)
 	}
@@ -86,6 +90,7 @@ func applyHintFlagsFresh(ctx *hints.Context, activation modecmd.Activation) {
 	ctx.SetFilterTextContains(activation.FilterTextContains)
 	ctx.SetStartWithSearch(activation.Search != nil && *activation.Search)
 	ctx.SetHideOnEmptySearch(activation.HideOnEmptySearch != nil && *activation.HideOnEmptySearch)
+	ctx.SetExitOnUnmatched(activation.ExitOnUnmatched != nil && *activation.ExitOnUnmatched)
 	ctx.SetStrategyOverride(derefOr(activation.Strategy, ""))
 	ctx.SetCaptureScopeOverride(derefOr(activation.CaptureScope, ""))
 	ctx.SetLabelDirectionOverride(derefOr(activation.LabelDirection, ""))

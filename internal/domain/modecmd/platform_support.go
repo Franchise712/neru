@@ -26,6 +26,7 @@ func PlatformSupport() parity.Declaration {
 		FlagToggle.String(),
 		FlagSearch.String(),
 		FlagHideOnEmptySearch.String(),
+		FlagExitOnUnmatched.String(),
 		FlagRole.String(),
 		FlagText.String(),
 		FlagStrategy.String(),

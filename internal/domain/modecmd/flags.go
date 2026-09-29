@@ -39,6 +39,9 @@ const (
 	// FlagHideOnEmptySearch hides every hint while the search query is empty.
 	FlagHideOnEmptySearch Flag = "hide-on-empty-search"
 
+	// FlagExitOnUnmatched exits the mode when a key matches no hint.
+	FlagExitOnUnmatched Flag = "exit-on-unmatched"
+
 	// FlagRole filters elements by accessibility role.
 	FlagRole Flag = "role"
 
@@ -110,6 +113,7 @@ const (
 	usageCursorSelectionMode = "How the real cursor should behave during selection: follow or hold"
 	usageSearch              = "Show search input when the mode is activated"
 	usageHideOnEmptySearch   = "Hide all hints when search query is empty (requires --search)"
+	usageExitOnUnmatched     = "Exit the mode when a key matches no hint"
 	usageRole                = "Filter by element role (comma-separated: button,link — the hints.clickable_roles vocabulary, see 'neru roles'). Repeat the flag to add more"
 	usageText                = "Filter elements by text content (comma-separated, case-insensitive substring match). Repeat the flag to add more"
 	usageStrategy            = "Element detection strategy: axtree (the platform accessibility tree), vision (screen recognition: the Vision framework on macOS, tesseract OCR on Linux, Windows.Media.Ocr on Windows), or contour (edge and contour analysis of the window pixels, ported from wl-kbptr). " + usageCycle + " (--strategy=axtree,vision)"
@@ -475,6 +479,12 @@ var descriptors = []Descriptor{
 		func(activation *Activation) { activation.HideOnEmptySearch = enabled() },
 		func(activation Activation) []string {
 			return renderPresence(FlagHideOnEmptySearch, activation.HideOnEmptySearch)
+		},
+	),
+	presenceFlag(FlagExitOnUnmatched, "", usageExitOnUnmatched, hintsOnly,
+		func(activation *Activation) { activation.ExitOnUnmatched = enabled() },
+		func(activation Activation) []string {
+			return renderPresence(FlagExitOnUnmatched, activation.ExitOnUnmatched)
 		},
 	),
 	listFlag(FlagRole, "", usageRole, msgRoleValue, hintsOnly,

@@ -303,6 +303,7 @@ nothing.
 | `--toggle` | `-t` | none | `hints` · `grid` · `recursive_grid` · `bisect` · `scroll` · `monitor_select` · `mode` | Toggle mode on/off (exit to idle if already active) |
 | `--search` | `-s` | none | `hints` | Show search input when the mode is activated |
 | `--hide-on-empty-search` |  | none | `hints` | Hide all hints when search query is empty (requires --search) |
+| `--exit-on-unmatched` |  | none | `hints` | Exit the mode when a key matches no hint |
 | `--role` |  | value, repeatable | `hints` | Filter by element role (comma-separated: button,link — the hints.clickable_roles vocabulary, see 'neru roles'). Repeat the flag to add more |
 | `--text` |  | value, repeatable | `hints` | Filter elements by text content (comma-separated, case-insensitive substring match). Repeat the flag to add more |
 | `--strategy` |  | value | `hints` | Element detection strategy: axtree (the platform accessibility tree), vision (screen recognition: the Vision framework on macOS, tesseract OCR on Linux, Windows.Media.Ocr on Windows), or contour (edge and contour analysis of the window pixels, ported from wl-kbptr). A comma-separated list is a cycle. Entering the mode uses the first value, and running the command again while the mode is open uses the value after the one in use (--strategy=axtree,vision) |
@@ -378,7 +379,7 @@ framework. Coverage per platform is documented in
 it is absent from the reference above, unknown inside a hotkey binding, and
 cannot be combined with a flag that only describes an activation — `--action`,
 `--modifier`, `--on-exit`, `--repeat`, `--toggle`, `--search`,
-`--hide-on-empty-search`, `--label-direction` or `--cursor-selection-mode`. It
+`--hide-on-empty-search`, `--exit-on-unmatched`, `--label-direction` or `--cursor-selection-mode`. It
 does accept the flags that decide which elements are collected: `--role`,
 `--text`, `--strategy` and `--split-word`. On the wire a probe is its own
 command; see [IPC protocol](#ipc-protocol).

@@ -139,6 +139,7 @@ func TestActivateMode_HandsTheWholeActivationToTheMode(t *testing.T) {
 				Toggle:                &given,
 				Search:                &given,
 				HideOnEmptySearch:     &given,
+				ExitOnUnmatched:       &given,
 				SplitWord:             &given,
 				CursorFollowSelection: &holdCursor,
 				FilterRoles:           []string{"AXButton"},

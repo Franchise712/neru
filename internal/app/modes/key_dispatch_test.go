@@ -12,6 +12,7 @@ import (
 
 	"github.com/y3owk1n/neru/internal/app/components"
 	hintscomponent "github.com/y3owk1n/neru/internal/app/components/hints"
+	"github.com/y3owk1n/neru/internal/app/components/scroll"
 	configpkg "github.com/y3owk1n/neru/internal/config"
 	"github.com/y3owk1n/neru/internal/domain"
 	"github.com/y3owk1n/neru/internal/domain/action"
@@ -194,6 +195,89 @@ func TestHandleKeyPressRoutesAllKeysToHintSearch(t *testing.T) {
 	if got := handler.hints.Context.SearchQuery(); got != "/" {
 		t.Fatalf("search query = %q, want %q", got, "/")
 	}
+}
+
+func TestHandleHintsModeKey_ExitOnUnmatched(t *testing.T) {
+	t.Parallel()
+
+	setupHandler := func(exitOnUnmatched bool) *Handler {
+		appState := state.NewAppState()
+		appState.SetMode(domain.ModeHints)
+
+		handler := newHandlerWithState(handlerState{
+			config:        &configpkg.Config{},
+			logger:        zap.NewNop(),
+			appState:      appState,
+			cursorState:   state.NewCursorState(),
+			modifierState: state.NewModifierState(),
+			scroll:        &components.ScrollComponent{Context: &scroll.Context{}},
+			hints: &components.HintsComponent{
+				Context: &hintscomponent.Context{},
+			},
+			modes: map[domain.Mode]Mode{},
+		})
+		handler.modes[domain.ModeHints] = NewHintsMode(&handler.handlerState)
+
+		elem, _ := element.NewElement(
+			"target",
+			image.Rect(0, 0, 20, 20),
+			element.RoleButton,
+		)
+		collection := domainhint.NewCollection([]*domainhint.Interface{
+			mustNewModeHint("AA", elem),
+		})
+
+		handler.mu.Lock()
+		manager := domainhint.NewManager(handler.logger, &handler.mu)
+		handler.hints.Context.SetManager(manager)
+		handler.hints.Context.SetExitOnUnmatched(exitOnUnmatched)
+		_ = handler.hints.Context.SetHints(collection)
+		handler.hints.Context.SetRouter(domainhint.NewRouter(manager, handler.logger))
+		handler.mu.Unlock()
+
+		return handler
+	}
+
+	t.Run(
+		"when exit-on-unmatched is false, unmatched key keeps hints mode open",
+		func(t *testing.T) {
+			t.Parallel()
+
+			handler := setupHandler(false)
+
+			handler.HandleKeyPress("z")
+
+			handler.mu.Lock()
+			defer handler.mu.Unlock()
+
+			if handler.appState.CurrentMode() != domain.ModeHints {
+				t.Fatalf(
+					"current mode = %v, want %v",
+					handler.appState.CurrentMode(),
+					domain.ModeHints,
+				)
+			}
+		},
+	)
+
+	t.Run("when exit-on-unmatched is true, unmatched key exits hints mode", func(t *testing.T) {
+		t.Parallel()
+
+		handler := setupHandler(true)
+
+		handler.HandleKeyPress("z")
+
+		handler.mu.Lock()
+		defer handler.mu.Unlock()
+
+		if handler.appState.CurrentMode() != domain.ModeIdle {
+			t.Fatalf(
+				"current mode = %v, want %v (exited)",
+				handler.appState.CurrentMode(),
+				domain.ModeIdle,
+			)
+		}
+	})
 }
 
 // newHeldRepeatTestHandler builds a handler in recursive-grid mode where "j" is

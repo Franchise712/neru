@@ -42,6 +42,10 @@ type Manager struct {
 	// HandleInput call, avoiding a redundant FilterByPrefix to capture
 	// the "before" count on each keystroke.
 	lastFilteredLen int
+
+	// exitOnUnmatched keeps the input and skips the redraw on an unmatched
+	// key, so the mode can exit without drawing first.
+	exitOnUnmatched bool
 }
 
 const (
@@ -70,6 +74,12 @@ func (m *Manager) SetUpdateCallback(callback func([]*Interface)) {
 	defer m.mu.Unlock()
 
 	m.onUpdate = callback
+}
+
+// SetExitOnUnmatched sets whether HandleInput reports an unmatched key
+// instead of resetting the input.
+func (m *Manager) SetExitOnUnmatched(exit bool) {
+	m.exitOnUnmatched = exit
 }
 
 // SetHints updates the current hint collection and resets the input state.
@@ -171,6 +181,7 @@ func (m *Manager) Clear() error {
 	m.hints = nil
 	m.cachedFilteredHints = nil
 	m.lastFilteredLen = 0
+	m.exitOnUnmatched = false
 	m.SetCurrentInput("")
 
 	return nil
@@ -178,11 +189,12 @@ func (m *Manager) Clear() error {
 
 // HandleInput processes an input character and returns the matched hint if an exact match is found.
 // Handles backspace for input correction, filters hints by prefix, and detects exact matches.
-// Returns (hint, true) if exact match found, (nil, false) otherwise.
+// It returns the hint and exactMatch=true on an exact match, and unmatched=true
+// when no hint matches the input and exitOnUnmatched is enabled.
 // Maintains input state and triggers overlay updates for filtered hints.
-func (m *Manager) HandleInput(key string) (*Interface, bool, error) {
+func (m *Manager) HandleInput(key string) (*Interface, bool, bool, error) {
 	if m.hints == nil {
-		return nil, false, nil
+		return nil, false, false, nil
 	}
 
 	if m.Logger != nil {
@@ -192,7 +204,7 @@ func (m *Manager) HandleInput(key string) (*Interface, bool, error) {
 	}
 
 	if len(key) != 1 {
-		return nil, false, nil
+		return nil, false, false, nil
 	}
 
 	prevLen := m.lastFilteredLen
@@ -205,6 +217,10 @@ func (m *Manager) HandleInput(key string) (*Interface, bool, error) {
 	}
 
 	if len(filtered) == 0 {
+		if m.exitOnUnmatched {
+			return nil, false, true, nil
+		}
+
 		// No matches - reset input and update to show all hints
 		m.SetCurrentInput("")
 		allLen := len(m.hints.All())
@@ -219,14 +235,14 @@ func (m *Manager) HandleInput(key string) (*Interface, bool, error) {
 			if allLen == prevLen {
 				err := m.immediateUpdate(m.hints.All())
 				if err != nil {
-					return nil, false, err
+					return nil, false, false, err
 				}
 			} else {
 				m.debouncedUpdate(m.hints.All())
 			}
 		}
 
-		return nil, false, nil
+		return nil, false, false, nil
 	}
 
 	if cap(m.cachedFilteredHints) < len(filtered) {
@@ -256,7 +272,7 @@ func (m *Manager) HandleInput(key string) (*Interface, bool, error) {
 
 		m.lastFilteredLen = len(filtered)
 
-		return m.cachedFilteredHints[0], true, nil
+		return m.cachedFilteredHints[0], true, false, nil
 	}
 
 	m.lastFilteredLen = len(filtered)
@@ -273,13 +289,13 @@ func (m *Manager) HandleInput(key string) (*Interface, bool, error) {
 	if len(filtered) == prevLen {
 		err := m.immediateUpdate(m.cachedFilteredHints)
 		if err != nil {
-			return nil, false, err
+			return nil, false, false, err
 		}
 	} else {
 		m.debouncedUpdate(m.cachedFilteredHints)
 	}
 
-	return nil, false, nil
+	return nil, false, false, nil
 }
 
 // FilteredHints returns hints filtered by the current input.

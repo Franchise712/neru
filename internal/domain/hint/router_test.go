@@ -128,3 +128,50 @@ func TestRouter_WithHints(t *testing.T) {
 		t.Errorf("Expected hint label 'AC', got %s", result.ExactHint().Label())
 	}
 }
+
+func TestRouter_UnmatchedKey(t *testing.T) {
+	logger := zap.NewNop()
+	manager := hint.NewManager(logger, nil)
+	router := hint.NewRouter(manager, logger)
+
+	elem1, _ := element.NewElement("test1", image.Rect(0, 0, 10, 10), element.RoleButton)
+	h1, _ := hint.NewHint("AB", elem1, image.Point{X: 5, Y: 5})
+	collection := hint.NewCollection([]*hint.Interface{h1})
+
+	err := manager.SetHints(collection)
+	if err != nil {
+		t.Fatalf("SetHints: %v", err)
+	}
+
+	// With exitOnUnmatched off, an unmatched key resets the input and is not reported.
+	result, err := router.RouteKey("z")
+	if err != nil {
+		t.Fatalf("RouteKey: %v", err)
+	}
+
+	if result.Unmatched() {
+		t.Error("result.Unmatched() = true, want false when exitOnUnmatched is false")
+	}
+
+	manager.SetExitOnUnmatched(true)
+
+	// Type matching prefix "A"
+	result, err = router.RouteKey("a")
+	if err != nil {
+		t.Fatalf("RouteKey: %v", err)
+	}
+
+	if result.Unmatched() {
+		t.Error("result.Unmatched() = true, want false for matching prefix 'a'")
+	}
+
+	// Type unmatched key "Z"
+	result, err = router.RouteKey("z")
+	if err != nil {
+		t.Fatalf("RouteKey: %v", err)
+	}
+
+	if !result.Unmatched() {
+		t.Error("result.Unmatched() = false, want true for unmatched key 'z'")
+	}
+}

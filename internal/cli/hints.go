@@ -23,6 +23,9 @@ var HintsCmd = BuildModeCommand(ModeConfig{
   search query is empty. Hints appear only as you type a query, making
   it easier to focus on matching results.
 
+  Use --exit-on-unmatched to exit hints mode when a pressed key does not
+  start any hint label.
+
   Use --role and --text to filter which elements get hinted:
     --role button,link           Only hint buttons and links
     --text "Submit,Cancel"        Only hint elements containing "Submit" or "Cancel"
@@ -58,6 +61,7 @@ var HintsCmd = BuildModeCommand(ModeConfig{
     neru hints --action left_click --repeat  Click multiple elements in sequence
     neru hints --search                      Start with search input shown
     neru hints --search --hide-on-empty-search  Start search with hints hidden until you type
+    neru hints --action left_click --exit-on-unmatched Exit overlay if key matches no hint
     neru hints --role button                 Hint only buttons
     neru hints --strategy vision             Detect elements by screen recognition
     neru hints --strategy contour           Detect buttons and icons via contour analysis

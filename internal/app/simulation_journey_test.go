@@ -856,6 +856,39 @@ func TestSimulation_HintsRepeatJourney(t *testing.T) {
 	sim.waitMode(domain.ModeIdle)
 }
 
+// TestSimulation_HintsRepeatExitOnUnmatchedJourney runs hints with --action left_click
+// --repeat --exit-on-unmatched. Clicking a hint runs the action and re-activates hints
+// mode, and a later unmatched key returns to idle mode.
+func TestSimulation_HintsRepeatExitOnUnmatchedJourney(t *testing.T) {
+	cfg := simConfig()
+	cfg.Hotkeys.Bindings[hintsHotkey] = []string{
+		"hints --action left_click --repeat --exit-on-unmatched",
+	}
+
+	save := simElement(t, "save", image.Rect(100, 100, 220, 140), "Save")
+	sim := newSimHarness(t, cfg, []*element.Element{save})
+
+	sim.pressHotkey(hintsHotkey)
+	sim.waitMode(domain.ModeHints)
+	sim.waitFor("hints drawn", func() bool { return sim.overlay.hintDrawCount() > 0 })
+
+	drawsBefore := sim.overlay.hintDrawCount()
+	sim.typeLabel(sim.overlay.lastHintLabels()[0])
+
+	sim.waitFor("first click recorded", func() bool { return len(sim.ax.recordedClicks()) == 1 })
+	sim.waitFor("hints re-armed after repeat click", func() bool {
+		return sim.app.CurrentMode() == domain.ModeHints &&
+			sim.overlay.hintDrawCount() > drawsBefore
+	})
+
+	if clicks := sim.ax.recordedClicks(); len(clicks) != 1 || clicks[0].point != save.Center() {
+		t.Fatalf("click recorded at %v, expected %v", clicks, save.Center())
+	}
+
+	sim.press("z")
+	sim.waitMode(domain.ModeIdle)
+}
+
 // TestSimulation_HintsFlaggedBindingJourney covers a binding that carries a
 // whole activation rather than a bare action: what to do, what to hold while
 // doing it, and what to run once it is done.

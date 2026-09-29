@@ -13,25 +13,26 @@ import (
 // The literals these cases repeat, spelled out rather than built from the
 // vocabulary so that a case still pins the exact text a user would write.
 const (
-	leftClick        = "left_click"
-	modeNameHints    = "hints"
-	stepIdle         = "idle"
-	flagAction       = "--action"
-	flagOnExit       = "--on-exit"
-	flagRole         = "--role"
-	flagRepeat       = "--repeat"
-	flagStrategy     = "--strategy"
-	flagHideOnEmpty  = "--hide-on-empty-search"
-	argAction        = "--action=left_click"
-	argSearch        = "--search"
-	argToggle        = "--toggle"
-	argOnExitStep    = "--on-exit=action left_click"
-	argModifierCmd   = "--modifier=cmd"
-	argBadStrategy   = "--strategy=nonsense"
-	argZoomToDepth2  = "--zoom-to-depth=2"
-	flagMistyped     = "--serach"
-	stepLeftClick    = "action left_click"
-	directionReverse = "reverse"
+	leftClick           = "left_click"
+	modeNameHints       = "hints"
+	stepIdle            = "idle"
+	flagAction          = "--action"
+	flagOnExit          = "--on-exit"
+	flagRole            = "--role"
+	flagRepeat          = "--repeat"
+	flagStrategy        = "--strategy"
+	flagHideOnEmpty     = "--hide-on-empty-search"
+	flagExitOnUnmatched = "--exit-on-unmatched"
+	argAction           = "--action=left_click"
+	argSearch           = "--search"
+	argToggle           = "--toggle"
+	argOnExitStep       = "--on-exit=action left_click"
+	argModifierCmd      = "--modifier=cmd"
+	argBadStrategy      = "--strategy=nonsense"
+	argZoomToDepth2     = "--zoom-to-depth=2"
+	flagMistyped        = "--serach"
+	stepLeftClick       = "action left_click"
+	directionReverse    = "reverse"
 
 	// msgZoomToDepth is the one message that flag gives, whichever way its
 	// value is unusable.
@@ -124,6 +125,16 @@ func flagCases() map[modecmd.Flag]flagCase {
 			build: func(a *modecmd.Activation) {
 				a.Search = new(true)
 				a.HideOnEmptySearch = new(true)
+			},
+		},
+		modecmd.FlagExitOnUnmatched: {
+			mode: domain.ModeHints,
+			args: []string{flagExitOnUnmatched},
+			applied: func(a modecmd.Activation) bool {
+				return a.ExitOnUnmatched != nil && *a.ExitOnUnmatched
+			},
+			build: func(a *modecmd.Activation) {
+				a.ExitOnUnmatched = new(true)
 			},
 		},
 		modecmd.FlagRole: {
