@@ -23,7 +23,7 @@ Hints, grids and vim keys for your whole desktop. Free, open source, one binary,
 
 ---
 
-https://github.com/user-attachments/assets/6b5673e1-7131-4bc0-ad57-41678e9423b9
+https://github.com/user-attachments/assets/7f4e85ea-91d5-4102-b84b-45dea6c73d40
 
 If you use Vimium in the browser, you already know the feeling. Neru brings it to every app, window, menu bar and dock item on your screen.
 
