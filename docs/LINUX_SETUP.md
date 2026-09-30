@@ -273,6 +273,7 @@ sudo dnf install -y \
   libXfixes-devel \
   libxkbcommon-devel \
   libei-devel \
+  liboeffis-devel \
   fontconfig-devel \
   tesseract-devel \
   tesseract-langpack-eng \
@@ -303,9 +304,8 @@ sudo pacman -S \
   ttf-dejavu
 ```
 
-On Fedora and Arch, `liboeffis` is bundled in the `libei` package. dnf rejects
-the whole transaction when one name is unknown, so a stray `liboeffis-devel`
-leaves every other package uninstalled too.
+On Arch, `liboeffis` is part of the `libei` package. Fedora ships it on its
+own as `liboeffis-devel`, from Fedora 42 on.
 
 Release binaries need only the runtime halves. On Fedora that is `tesseract-libs`
 (the `tesseract` package is the CLI alone), `tesseract-langpack-eng`, `libei`,
