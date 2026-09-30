@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.57.0](https://github.com/y3owk1n/neru/compare/v1.56.0...v1.57.0) (2026-09-30)
+
+
+### Features
+
+* **hints:** add exit-on-unmatched flag to dismiss overlay on unmatched key ([#1718](https://github.com/y3owk1n/neru/issues/1718)) ([1c47ad5](https://github.com/y3owk1n/neru/commit/1c47ad529dca1fc64f3ace01f19bb50b2b3c0d3a))
+
 ## [1.56.0](https://github.com/y3owk1n/neru/compare/v1.55.0...v1.56.0) (2026-09-28)
 
 
