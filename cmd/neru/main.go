@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	"go.uber.org/zap"
 
@@ -178,43 +177,11 @@ func handleAccessibilityPermissionStartup() {
 		return
 	}
 
-	if waitForAccessibility(platform.CheckAccessibilityPermissions, accessibilityStartupGrace,
-		accessibilityStartupPoll, time.Sleep) {
+	if platform.CheckAccessibilityPermissions() {
 		return
 	}
 
 	if platform.ShowAccessibilityPermissionStartupAlert() == platform.AccessibilityPermissionStartupQuit {
 		os.Exit(0)
-	}
-}
-
-// Launched as a login item, Neru starts in the same second as every other login
-// item, and tccd can briefly fail to read the caller's code signature ("Failed to
-// get code reference") and answer "not trusted" for an app whose grant is intact.
-// Prompting on that answer, and the Request Permission path that runs
-// `tccutil reset`, erases a grant that was fine. So a "not trusted" at startup is
-// re-checked for a few seconds before it is believed.
-const (
-	accessibilityStartupGrace = 5 * time.Second
-	accessibilityStartupPoll  = 250 * time.Millisecond
-)
-
-// waitForAccessibility returns true as soon as check reports the permission,
-// re-checking every poll until grace has elapsed.
-func waitForAccessibility(
-	check func() bool,
-	grace, poll time.Duration,
-	sleep func(time.Duration),
-) bool {
-	for waited := time.Duration(0); ; waited += poll {
-		if check() {
-			return true
-		}
-
-		if waited >= grace {
-			return false
-		}
-
-		sleep(poll)
 	}
 }
